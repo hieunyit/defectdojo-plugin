@@ -19,6 +19,8 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.Computer;
+import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepMonitor;
@@ -27,6 +29,7 @@ import hudson.util.Secret;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Optional;
+import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -202,10 +205,25 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
             throw new AbortException(Messages.Builder_Result_InvalidArguments());
         }
 
-        final FilePath artifactFilePath = new FilePath(workspace, effectiveArtifact);
+        FilePath artifactFilePath = new FilePath(workspace, effectiveArtifact);
         if (!artifactFilePath.exists()) {
             logger.log(Messages.Builder_Artifact_NonExist(effectiveArtifact));
             throw new AbortException(Messages.Builder_Artifact_NonExist(effectiveArtifact));
+        }
+
+        Node node = null;
+        Computer computer = workspace.toComputer();
+        if (computer != null) {
+            node = computer.getNode();
+        }
+        if (!(node instanceof Jenkins)) {
+            logger.log(Messages.Publisher_Agent_Anouncement());
+            FilePath tempDirOnMaster = new FilePath(Jenkins.get().getRootPath(), "temp-upload-dir");
+            FilePath artifactOnMaster = tempDirOnMaster.child(artifactFilePath.getName());
+            logger.log(Messages.Publisher_Agent_CopyToMaster(artifactFilePath, artifactOnMaster));
+            tempDirOnMaster.mkdirs();
+            artifactFilePath.copyTo(artifactOnMaster);
+            artifactFilePath = artifactOnMaster;
         }
 
         final String effectiveUrl = getEffectiveUrl();

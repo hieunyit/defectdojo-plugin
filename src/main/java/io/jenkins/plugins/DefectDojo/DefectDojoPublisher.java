@@ -285,7 +285,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
                 effectiveBranchTag,
                 effectiveCommitHash,
                 artifactFilePath,
-                scanType,
+                effectiveScanType,
                 effectiveEnvironment,
                 effectiveEnvironmentId,
                 effectiveReupload);

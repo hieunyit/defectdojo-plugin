@@ -233,7 +233,7 @@ public class ApiClient {
         jsonBody.put("verified", "false");
 
         if (StringUtils.isNotBlank(environmentId)) {
-            jsonBody.put("environment_id", environmentId);
+            jsonBody.put("environment_id", Integer.parseInt(environmentId));
         } else if (StringUtils.isNotBlank(environment)) {
             jsonBody.put("environment", environment);
         }
@@ -451,7 +451,11 @@ public class ApiClient {
         // Convert JSON string to form parts
         json.keySet().forEach(key -> {
             Object value = json.get(key);
-            builder.addFormDataPart(key.toString(), value.toString());
+            if (value instanceof Number) {
+                builder.addFormDataPart(key.toString(), String.valueOf(value));
+            } else {
+                builder.addFormDataPart(key.toString(), value.toString());
+            }
         });
 
         if (filePart != null) {

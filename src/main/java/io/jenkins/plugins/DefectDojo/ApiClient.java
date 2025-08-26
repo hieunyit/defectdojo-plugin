@@ -63,6 +63,7 @@ public class ApiClient {
     static final String PRODUCT_URL = API_URL + "/products/";
     static final String SCAN_TYPE_URL = API_URL + "/test_types";
     static final String TESTS_URL = API_URL + "/tests";
+    static final String ENVIRONMENT_URL = API_URL + "/environments/";
     static final String LOOKUP_TEST_BY_EGAGEMENT_ID_PARAM = "engagement";
     static final String LOOKUP_TEST_PARAM = "scan_type";
     static final String LOOKUP_NAME_PARAM = "name";
@@ -155,6 +156,19 @@ public class ApiClient {
     @NonNull
     public List<JSONObject> getScanTypes() throws ApiClientException {
         return getData(SCAN_TYPE_URL);
+    }
+
+    @NonNull
+    public List<JSONObject> getEnvironments() throws ApiClientException {
+        return getData(ENVIRONMENT_URL);
+    }
+
+    @NonNull
+    public String getEnvironmentId(final String environmentName) throws ApiClientException {
+        final var uri = UriComponentsBuilder.fromUriString(ENVIRONMENT_URL)
+                .queryParam(LOOKUP_NAME_EXACT_PARAM, "{environmentName}")
+                .build(environmentName);
+        return getIdFromDojo(createRequest(uri));
     }
 
     @NonNull

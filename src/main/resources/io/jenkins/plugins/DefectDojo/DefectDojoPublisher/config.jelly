@@ -57,7 +57,7 @@ limitations under the License.
                 <f:textbox id="environment" />
             </f:entry>
             <f:entry title="${%environmentId}" field="environmentId">
-                <f:textbox id="environmentId" />
+                <f:select id="environmentId" />
             </f:entry>
         </f:optionalBlock>
 

@@ -188,6 +188,8 @@ public class ApiClient {
             @Nullable String commitHash,
             @NonNull final FilePath artifact,
             @NonNull final String scanType,
+            @Nullable final String environment,
+            @Nullable final String environmentId,
             boolean reuploadScan)
             throws IOException, InterruptedException {
         if (!artifact.exists()) {
@@ -215,7 +217,13 @@ public class ApiClient {
         jsonBody.put("do_not_reactivate", "true");
         jsonBody.put("active", "false");
         jsonBody.put("verified", "false");
-        jsonBody.put("environment", "");
+
+        if (StringUtils.isNotBlank(environmentId)) {
+            jsonBody.put("environment_id", environmentId);
+        } else if (StringUtils.isNotBlank(environment)) {
+            jsonBody.put("environment", environment);
+        }
+
         jsonBody.put("minimum_severity", "Low");
 
         RequestBody fileRequestBody =

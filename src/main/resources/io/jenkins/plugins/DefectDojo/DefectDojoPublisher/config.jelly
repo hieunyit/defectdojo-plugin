@@ -53,6 +53,12 @@ limitations under the License.
             <f:entry title="${%engagement.branchtag}" field="branchTag">
                 <f:textbox id="engagement.branchtag" checkMethod="post" />
             </f:entry>
+            <f:entry title="${%environment}" field="environment">
+                <f:textbox id="environment" />
+            </f:entry>
+            <f:entry title="${%environmentId}" field="environmentId">
+                <f:textbox id="environmentId" />
+            </f:entry>
         </f:optionalBlock>
 
         <f:optionalBlock inline="true" field="overrideGlobals" title="${%overrideGlobals}">

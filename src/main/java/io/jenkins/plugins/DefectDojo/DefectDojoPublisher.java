@@ -83,6 +83,16 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
     private String branchTag;
 
     /**
+     * the environment name for the scan. This is a per-build config item.
+     */
+    private String environment;
+
+    /**
+     * the environment id for the scan. This is a per-build config item.
+     */
+    private String environmentId;
+
+    /**
      * Retrieves the path and filename of the artifact. This is a per-build
      * config item.
      */
@@ -181,6 +191,8 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         final String effectiveSourceCodeUrl = env.expand(sourceCodeUrl);
         final String effectiveCommitHash = env.expand(commitHash);
         final String effectiveBranchTag = env.expand(branchTag);
+        final String effectiveEnvironment = environment != null ? env.expand(environment) : null;
+        final String effectiveEnvironmentId = environmentId != null ? env.expand(environmentId) : null;
         final String effectiveArtifact = env.expand(artifact);
         final String effectiveScanType = env.expand(scanType);
         final boolean effectiveAutoCreateProduct = isEffectiveAutoCreateProducts();
@@ -274,6 +286,8 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
                 effectiveCommitHash,
                 artifactFilePath,
                 scanType,
+                effectiveEnvironment,
+                effectiveEnvironmentId,
                 effectiveReupload);
 
         if (!uploadResult) {

@@ -65,3 +65,16 @@ pipeline {
     }
 }
 ```
+
+Example using the new environment fields:
+
+```groovy
+defectDojoPublisher(
+  artifact: 'reports/semgrep.json',
+  scanType: 'Semgrep JSON Report',
+  productName: 'demo',
+  engagementName: 'ci/cd',
+  environment: 'Production', // or environmentId: '3'
+  defectDojoCredentialsId: 'DD_API_TOKEN'
+)
+```

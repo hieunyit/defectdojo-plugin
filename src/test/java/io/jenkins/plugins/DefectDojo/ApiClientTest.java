@@ -154,7 +154,7 @@ class ApiClientTest {
 
         ApiClient uut = createClient();
 
-        assertThat(uut.upload(null, null, null, null, null, artifactPath, null, false))
+        assertThat(uut.upload(null, null, null, null, null, artifactPath, null, null, null, false))
                 .isEqualTo(false);
         verify(logger).log(Messages.Builder_Product_NotFound());
     }

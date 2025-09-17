@@ -215,6 +215,40 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
     }
 
     /**
+     * Retrieve environments to populate the dropdown.
+     *
+     * @param defectDojoUrl the base URL to DefectDojo
+     * @param defectDojoCredentialsId the API key to use for authentication
+     * @param item used to lookup credentials in job config. ignored in global
+     * @return ListBoxModel
+     */
+    @POST
+    public ListBoxModel doFillEnvironmentIdItems(
+            @QueryParameter final String defectDojoUrl,
+            @QueryParameter final String defectDojoCredentialsId,
+            @AncestorInPath @Nullable final Item item) {
+        final ListBoxModel environments = new ListBoxModel();
+        try {
+            final String url =
+                    Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
+            final Secret apiKey = lookupApiKey(
+                    Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId))
+                            .orElseGet(this::getDefectDojoCredentialsId),
+                    item);
+            final ApiClient apiClient = getClient(url, apiKey);
+            final List<ListBoxModel.Option> options = apiClient.getEnvironments().stream()
+                    .map(e -> new ListBoxModel.Option(e.getString("name"), e.getString("id")))
+                    .sorted(Comparator.comparing(o -> o.name))
+                    .collect(Collectors.toList());
+            environments.add(new ListBoxModel.Option(Messages.Publisher_EnvironmentList_Placeholder(), StringUtils.EMPTY));
+            environments.addAll(options);
+        } catch (ApiClientException e) {
+            environments.add(Messages.Builder_Error_Products(e.getLocalizedMessage()), StringUtils.EMPTY);
+        }
+        return environments;
+    }
+
+    /**
      * Retrieve the projects to populate the dropdown.
      *
      * @param defectDojoUrl the base URL to DefectDojo

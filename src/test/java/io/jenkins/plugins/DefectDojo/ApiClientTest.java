@@ -154,7 +154,7 @@ class ApiClientTest {
 
         ApiClient uut = createClient();
 
-        assertThat(uut.upload(null, null, null, null, null, artifactPath, null, false))
+        assertThat(uut.upload(null, null, null, null, null, artifactPath, null, null, null, false))
                 .isEqualTo(false);
         verify(logger).log(Messages.Builder_Product_NotFound());
     }
@@ -173,5 +173,63 @@ class ApiClientTest {
 
         ApiClient uut = createClient();
         assertThat(uut.getEngagementId(null, "test")).isEqualTo("10");
+    }
+
+    @Test
+    void testUploadIncludesEnvironmentId(@TempDir Path tmpWork, JenkinsRule r)
+            throws IOException, InterruptedException {
+        server = HttpServer.create()
+                .host("localhost")
+                .port(0)
+                .route(routes -> routes.post(ApiClient.UPLOAD_URL, (request, response) ->
+                        request.receive().aggregate().asString().flatMap(body -> {
+                            assertCommonHeaders(request);
+                            assertThat(body)
+                                    .contains("form-data; name=\"environment_id\"")
+                                    .contains("\r\n\r\n3");
+                            return response.status(HttpResponseStatus.CREATED).send();
+                        })))
+                .bindNow();
+
+        File artifact = tmpWork.resolve("report.xml").toFile();
+        artifact.createNewFile();
+        FilePath artifactPath = new FilePath(artifact);
+
+        ApiClient uut = createClient();
+        assertThat(uut.upload("1", "2", null, null, null, artifactPath, "scan", null, "3", false))
+                .isTrue();
+    }
+
+    @Test
+    void testReuploadIncludesEnvironmentId(@TempDir Path tmpWork, JenkinsRule r)
+            throws IOException, InterruptedException, ApiClientException {
+        server = HttpServer.create()
+                .host("localhost")
+                .port(0)
+                .route(routes -> routes
+                        .get(ApiClient.TESTS_URL, (request, response) -> {
+                            assertCommonHeaders(request);
+                            return response.status(HttpResponseStatus.OK)
+                                    .sendString(Mono.just("{\"results\": [{\"id\": 99 }]}"));
+                        })
+                        .post(ApiClient.REUPLOAD_URL, (request, response) ->
+                                request.receive().aggregate().asString().flatMap(body -> {
+                                    assertCommonHeaders(request);
+                                    assertThat(body)
+                                            .contains("form-data; name=\"environment_id\"")
+                                            .contains("\r\n\r\n3")
+                                            .contains("form-data; name=\"test\"")
+                                            .contains("\r\n\r\n99");
+                                    return response.status(HttpResponseStatus.OK).send();
+                                })))
+                .bindNow();
+
+        File artifact = tmpWork.resolve("report.xml").toFile();
+        artifact.createNewFile();
+        FilePath artifactPath = new FilePath(artifact);
+
+        ApiClient uut = createClient();
+        assertThat(uut.upload("1", "2", null, null, null, artifactPath, "scan", null, "3", true))
+                .isTrue();
     }
 }
